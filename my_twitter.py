@@ -1,6 +1,7 @@
 import twitter
 import json
 from urllib.parse import unquote
+from collections import Counter
 
 
 def generate_twitter_api() -> twitter.Twitter:
@@ -71,17 +72,20 @@ def list_trend():
     print(us_trend_list)
 
 
-def search_twitter():
-    q = "YG Plus"
-    count = 100
-
+def search_twitter(q: str = "COVID-19", count: int = 1000, times: int = 1) -> list:
+    """根据指定关键词搜索，并返回list
+    q -- 需要搜索的关键词
+    count -- 每次搜索的数量
+    times -- 要搜索的次数
+    """
     my_twitter_api = generate_twitter_api()
 
-    search_results = my_twitter_api.search.tweets(q=q, count=count)
+    search_results = my_twitter_api.search.tweets(q=q, count=count, lang="en")
+    print(f"{search_results.rate_limit_remaining=}")
     statuses = search_results['statuses']
 
-    for _ in range(5):
-        print('Length of statuses', len(statuses))
+    for _ in range(times):
+        # print('Length of statuses', len(statuses))
         try:
             next_results = search_results['search_metadata']['next_results']
         except KeyError:  # No more results when next_results doesn't exist
@@ -92,8 +96,39 @@ def search_twitter():
         search_results = my_twitter_api.search.tweets(**kwargs)
         statuses += search_results['statuses']
 
-        print(json.dumps(statuses[0], indent=1))
+        # print(json.dumps(statuses[0], indent=1))
+    return statuses
+
+
+def save_statuses_to_file(statuses: list, dir_name: str):
+    """将statuses保存到dir_name指定的文件夹下"""
+    for index, status in enumerate(statuses):
+        with open(f"{dir_name}\\{index}.json", 'w') as file:
+            file.write(json.dumps(status, indent=1))
+
+
+def save_statuses_to_one_file(statuses: list):
+    with open("COVID-19\\statuses_all.txt", "w") as file_handler:
+        file_handler.write(json.dumps(statuses, indent=1))
+
+
+def extract_text_screen_names_hash_tags():
+    statuses = search_twitter()
+    save_statuses_to_one_file(statuses)
+    status_texts = [status['text'] for status in statuses]
+    screen_names = [user_mention['screen_name'] for status in statuses for user_mention in
+                    status['entities']['user_mentions']]
+    hashtags = [hashtag['text'] for status in statuses for hashtag in status['entities']['hashtags']]
+    words = [word for sentence in status_texts for word in sentence.split()]
+    print(status_texts)
+    print(screen_names)
+    print(hashtags)
+    print(words)
+
+    for item in [words, screen_names, hashtags]:
+        c = Counter(item)
+        print(c.most_common()[:10])
 
 
 if __name__ == '__main__':
-    list_trend()
+    extract_text_screen_names_hash_tags()
