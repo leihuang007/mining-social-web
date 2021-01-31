@@ -2,6 +2,7 @@ import twitter
 import json
 from urllib.parse import unquote
 from collections import Counter
+from prettytable import PrettyTable
 
 
 def generate_twitter_api() -> twitter.Twitter:
@@ -44,7 +45,7 @@ def trends_to_list(trends) -> list:
 
 
 def compare_trends():
-    """获取热点话题Set之间的共性。common trends: {'YG Plus', '#NCT127DAY', 'bighit'}"""
+    """获取热点话题Set之间的共性。"""
     # The Yahoo! Where On Earth ID for the entire world is 1.
     world_woe_id = 1
     us_woe_id = 23424977
@@ -120,15 +121,27 @@ def extract_text_screen_names_hash_tags():
                     status['entities']['user_mentions']]
     hashtags = [hashtag['text'] for status in statuses for hashtag in status['entities']['hashtags']]
     words = [word for sentence in status_texts for word in sentence.split()]
-    print(status_texts)
-    print(screen_names)
-    print(hashtags)
-    print(words)
+    # print(status_texts)
+    # print(screen_names)
+    # print(hashtags)
+    # print(words)
 
     for item in [words, screen_names, hashtags]:
         c = Counter(item)
         print(c.most_common()[:10])
+    return words, screen_names, hashtags
+
+
+def pretty_extract_text():
+    """使用prettytable对字频结果进行美化"""
+    words, screen_names, hashtags = extract_text_screen_names_hash_tags()
+    for label, data in (("Words", words), ("Screen Names", screen_names), ("Hashtags", hashtags)):
+        pt = PrettyTable(field_names=[label, "Count"])
+        c = Counter(data)
+        [pt.add_row(kv) for kv in c.most_common()[0:10]]
+        pt.align[label], pt.align["Count"] = 'l', 'r'
+        print(pt)
 
 
 if __name__ == '__main__':
-    extract_text_screen_names_hash_tags()
+    pretty_extract_text()
