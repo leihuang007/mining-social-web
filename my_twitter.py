@@ -94,7 +94,9 @@ def search_twitter(q: str = "COVID-19", count: int = 1000, times: int = 1, is_lo
                 next_results = search_results['search_metadata']['next_results']
             except KeyError:  # No more results when next_results doesn't exist
                 break
-
+            if 'count=100' in next_results:
+                next_results = next_results.replace('count=100', f'count={count}')
+                # print(next_result)
             kwargs = dict([kv.split('=') for kv in unquote(next_results[1:]).split("&")])
 
             search_results = my_twitter_api.search.tweets(**kwargs)
@@ -111,9 +113,10 @@ def search_twitter(q: str = "COVID-19", count: int = 1000, times: int = 1, is_lo
         statuses = []
         if files:
             print(f'Found {len(files)} files.')
-            for file in files:
-                with open(os.path.join(q, file)) as result_file:
-                    statuses.append(json.loads(result_file.read()))
+            for index, file in enumerate(files):
+                if index < count * times:
+                    with open(os.path.join(q, file)) as result_file:
+                        statuses.append(json.loads(result_file.read()))
             return statuses
 
 
@@ -171,9 +174,9 @@ def average_words_per_tweet(statuses):
 
 def find_most_retweeted():
     """按照被retweet的次数进行排序"""
-    statuses = search_twitter()
-    retweet = [(status['retweet_count'], status['retweeted_status']['user']['screen_name'], status['text'])
-               for status in statuses if "retweeted_status" in status.keys()]
+    statuses = search_twitter(count=1000)
+    retweet = {(status['retweet_count'], status['retweeted_status']['user']['screen_name'], status['text'])
+               for status in statuses if "retweeted_status" in status.keys()}
     pt = PrettyTable(field_names=['Count', 'Screen Name', 'Text'])
     [pt.add_row(row) for row in sorted(retweet, reverse=True)]
     pt.max_width['Text'] = 50
@@ -189,7 +192,7 @@ def find_retweets():
 
 
 if __name__ == '__main__':
-    # find_most_retweeted()
-    # statuses = search_twitter(count=100, times=3)
+    find_most_retweeted()
+    # statuses = search_twitter(count=1000, times=430, is_local=False)
     # save_statuses_to_file(statuses, dir_name='COVID-19')
-    find_retweets()
+    # find_retweets()
