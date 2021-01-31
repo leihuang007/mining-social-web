@@ -3,6 +3,7 @@ import json
 from urllib.parse import unquote
 from collections import Counter
 from prettytable import PrettyTable
+import os
 
 
 def generate_twitter_api() -> twitter.Twitter:
@@ -73,38 +74,53 @@ def list_trend():
     print(us_trend_list)
 
 
-def search_twitter(q: str = "COVID-19", count: int = 1000, times: int = 1) -> list:
+def search_twitter(q: str = "COVID-19", count: int = 1000, times: int = 1, is_local: bool = True) -> list:
     """根据指定关键词搜索，并返回list
     q -- 需要搜索的关键词
     count -- 每次搜索的数量
     times -- 要搜索的次数
+    is_local -- 是否使用本地缓存的搜索结果
     """
-    my_twitter_api = generate_twitter_api()
+    if not is_local:
+        my_twitter_api = generate_twitter_api()
 
-    search_results = my_twitter_api.search.tweets(q=q, count=count, lang="en")
-    print(f"{search_results.rate_limit_remaining=}")
-    statuses = search_results['statuses']
+        search_results = my_twitter_api.search.tweets(q=q, count=count, lang="en")
+        print(f"{search_results.rate_limit_remaining=}")
+        statuses = search_results['statuses']
 
-    for _ in range(times):
-        # print('Length of statuses', len(statuses))
-        try:
-            next_results = search_results['search_metadata']['next_results']
-        except KeyError:  # No more results when next_results doesn't exist
-            break
+        for _ in range(times):
+            # print('Length of statuses', len(statuses))
+            try:
+                next_results = search_results['search_metadata']['next_results']
+            except KeyError:  # No more results when next_results doesn't exist
+                break
 
-        kwargs = dict([kv.split('=') for kv in unquote(next_results[1:]).split("&")])
+            kwargs = dict([kv.split('=') for kv in unquote(next_results[1:]).split("&")])
 
-        search_results = my_twitter_api.search.tweets(**kwargs)
-        statuses += search_results['statuses']
+            search_results = my_twitter_api.search.tweets(**kwargs)
+            statuses += search_results['statuses']
+            print(f"{search_results.rate_limit_remaining=}")
+            print(f'Appending {_ + 1} time(s). Found {len(statuses)} statuses')
 
-        # print(json.dumps(statuses[0], indent=1))
-    return statuses
+            # print(json.dumps(statuses[0], indent=1))
+        print(f'Done searching. Found {len(statuses)} statuses.')
+        return statuses
+    elif is_local:
+        print(f'Using local search results. Located in "{q}"')
+        files = os.listdir(q)
+        statuses = []
+        if files:
+            print(f'Found {len(files)} files.')
+            for file in files:
+                with open(os.path.join(q, file)) as result_file:
+                    statuses.append(json.loads(result_file.read()))
+            return statuses
 
 
 def save_statuses_to_file(statuses: list, dir_name: str):
-    """将statuses保存到dir_name指定的文件夹下"""
+    """将statuses保存到dir_name指定的文件夹下，文件名为每个status的id"""
     for index, status in enumerate(statuses):
-        with open(f"{dir_name}\\{index}.json", 'w') as file:
+        with open(f"{dir_name}\\{status['id']}.json", 'w') as file:
             file.write(json.dumps(status, indent=1))
 
 
@@ -143,5 +159,29 @@ def pretty_extract_text():
         print(pt)
 
 
+def lexical_diversity(tokens: list):
+    """计算Lexical Diversity"""
+    return len(set(tokens)) / len(tokens)
+
+
+def average_words_per_tweet(statuses):
+    word_counts = sum([word for status in statuses for word in status.split()])
+    return word_counts / len(statuses)
+
+
+def find_most_retweeted():
+    """按照被retweet的次数进行排序"""
+    statuses = search_twitter()
+    retweet = [(status['retweet_count'], status['retweeted_status']['user']['screen_name'], status['text'])
+               for status in statuses if "retweeted_status" in status.keys()]
+    pt = PrettyTable(field_names=['Count', 'Screen Name', 'Text'])
+    [pt.add_row(row) for row in sorted(retweet, reverse=True)]
+    pt.max_width['Text'] = 50
+    pt.align = 'l'
+    print(pt)
+
+
 if __name__ == '__main__':
-    pretty_extract_text()
+    find_most_retweeted()
+    # statuses = search_twitter(count=100, times=3)
+    # save_statuses_to_file(statuses, dir_name='COVID-19')
