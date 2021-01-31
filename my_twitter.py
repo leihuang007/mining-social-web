@@ -181,7 +181,15 @@ def find_most_retweeted():
     print(pt)
 
 
+def find_retweets():
+    """查找retweet。目前的API权限不支持，看看就算了。"""
+    twitter_api = generate_twitter_api()
+    _retweets = twitter_api.statuses.retweet(id='1355773184155508738')
+    print([r["user"]["screen_name"] for r in _retweets])
+
+
 if __name__ == '__main__':
-    find_most_retweeted()
+    # find_most_retweeted()
     # statuses = search_twitter(count=100, times=3)
     # save_statuses_to_file(statuses, dir_name='COVID-19')
+    find_retweets()
