@@ -4,6 +4,7 @@ from urllib.parse import unquote
 from collections import Counter
 from prettytable import PrettyTable
 import os
+import matplotlib.pyplot as plt
 
 
 def generate_twitter_api() -> twitter.Twitter:
@@ -191,8 +192,28 @@ def find_retweets():
     print([r["user"]["screen_name"] for r in _retweets])
 
 
+def draw_word_frequency_plot():
+    """根据word的词频绘制词频图"""
+    words, screen_names, hashtags = extract_text_screen_names_hash_tags()
+    words_count = sorted(Counter(words).values(), reverse=True)
+    plt.loglog(words_count)
+    plt.ylabel("Freq")
+    plt.xlabel("Word Rank")
+    plt.show()
+
+    for label, data in (('Words', words), ('Screen Names', screen_names), ('Hashtags', hashtags)):
+        c = Counter(data)
+        plt.hist(c.values())
+
+        plt.title(label)
+        plt.ylabel("Number of items in bin")
+        plt.xlabel("Bins (number of times an item appeared.)")
+        plt.show()
+
+
 if __name__ == '__main__':
-    find_most_retweeted()
+    # find_most_retweeted()
     # statuses = search_twitter(count=1000, times=430, is_local=False)
     # save_statuses_to_file(statuses, dir_name='COVID-19')
     # find_retweets()
+    draw_word_frequency_plot()
