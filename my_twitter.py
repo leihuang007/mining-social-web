@@ -124,7 +124,7 @@ def search_twitter(q: str = "COVID-19", count: int = 1000, times: int = 1, is_lo
 def save_statuses_to_file(statuses: list, dir_name: str):
     """将statuses保存到dir_name指定的文件夹下，文件名为每个status的id"""
     for index, status in enumerate(statuses):
-        with open(f"{dir_name}\\{status['id']}.json", 'w') as file:
+        with open(os.path.join(f"{dir_name}", f"{status['id']}.json"), 'w') as file:
             file.write(json.dumps(status, indent=1))
 
 
