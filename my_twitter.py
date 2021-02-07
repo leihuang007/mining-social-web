@@ -1,6 +1,7 @@
 import twitter
 import json
 from urllib.parse import unquote
+from urllib.error import HTTPError
 from collections import Counter
 from prettytable import PrettyTable
 import os
@@ -94,6 +95,9 @@ def search_twitter(q: str = "COVID-19", count: int = 1000, times: int = 1, is_lo
             try:
                 next_results = search_results['search_metadata']['next_results']
             except KeyError:  # No more results when next_results doesn't exist
+                break
+            except (HTTPError, twitter.api.TwitterHTTPError):  # Rate limit exceeded
+                print('Rate limit exceeded')
                 break
             if 'count=100' in next_results:
                 next_results = next_results.replace('count=100', f'count={count}')
@@ -213,7 +217,7 @@ def draw_word_frequency_plot():
 
 if __name__ == '__main__':
     # find_most_retweeted()
-    # statuses = search_twitter(count=1000, times=430, is_local=False)
-    # save_statuses_to_file(statuses, dir_name='COVID-19')
+    statuses = search_twitter(count=1000, times=449, is_local=False)
+    save_statuses_to_file(statuses, dir_name='COVID-19')
     # find_retweets()
-    draw_word_frequency_plot()
+    # draw_word_frequency_plot()
