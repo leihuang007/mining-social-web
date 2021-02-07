@@ -20,9 +20,10 @@ class DateEncoder(json.JSONEncoder):
 
 
 def scrap_without_cookie():
-    group_list = [932979303783032, 304616007309643, 177295420205691, 558766374844890, 'COVID19Resources',
+    group_list = [1288475234841795, 891546924927251, 932979303783032, 304616007309643, 177295420205691, 558766374844890,
+                  'COVID19Resources',
                   373920943948661, 1288475234841795, 256933822441031, 1047666978949055, 'solidaritycandle',
-                  'VancouverIslandEmergencyPreparedness', 1288475234841795, 891546924927251, ]
+                  'VancouverIslandEmergencyPreparedness', ]
     my_scraper = facebook_scraper._scraper
     my_scraper.user_agent = (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_0) "
@@ -46,7 +47,7 @@ def scrap_without_cookie():
                     print(f"\tSaving file{index} with post_id={post['post_id']}")
                     file_handler.write(json.dumps(post, indent=1, cls=DateEncoder))
             print(f'Done Group[{group_id}]')
-            time.sleep(600)
+            # time.sleep(600)
 
 
 def scrap_with_cookie():
