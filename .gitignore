@@ -130,3 +130,6 @@ dmypy.json
 
 # idea environment
 .idea/
+/nltk_data/
+/COVID-19-bak/
+/COVID-19/
