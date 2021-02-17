@@ -1,5 +1,7 @@
 import nltk
-from nltk.book import text1, FreqDist
+import re
+# from nltk.book import text1,  FreqDist
+from nltk.probability import FreqDist
 from urllib import request
 from bs4 import BeautifulSoup
 
@@ -42,6 +44,7 @@ def test_generate(my_text: nltk.text.Text):
 
 
 def test_frequency_distribution():
+    text1 = nltk.Text("")
     fdist1 = FreqDist(text1)
     print(fdist1)
     print(fdist1.most_common(50))
@@ -58,6 +61,7 @@ def test_frequency_distribution():
 
 def test_collocations():
     """显示词组"""
+    text1 = nltk.Text("")
     print(text1.collocations())
 
 
@@ -82,6 +86,29 @@ def test_html():
     print(text.concordance("gene"))
 
 
+def test_re():
+    wordlist = [w for w in nltk.corpus.words.words('en') if w.islower()]
+    # print(wordlist)
+    # 查找以ed结尾的单词
+    print([w for w in wordlist if re.search("ed$", w)])
+    # 查找第三个字母是j，第六个字母是t的八位单词
+    print([w for w in wordlist if re.search("^..j..t..$", w)])
+    # 计算email或者e-mail出现的次数
+    print(sum(1 for w in wordlist if re.search('^e-?mail$', w)))
+    # 在T9输入法中键入4653可以出现哪些字
+    print([w for w in wordlist if re.search('^[ghi][mno][jlk][def]$', w)])
+    # 在聊天记录中查找叠字
+    chat_words = sorted(set(w for w in nltk.corpus.nps_chat.words()))
+    print([w for w in chat_words if re.search('^m+i+n+e+$', w)])
+    print([w for w in chat_words if re.search('^[ha]+$', w)])
+    # 在聊天记录中查找不包含元音的单词
+    print([w for w in wordlist if re.search('^[^aeiouAEIOU]+$', w)])
+    # 找到单词中的所有元音，并计数
+    word = 'fjoeiwuoijfkldnanvcmnvam,jrfwioeuofiujdiosjafkl;sdjfklhagkdkslajfk;joiwqueoiuroiytgioyhoihgvz;'
+    print(re.findall(r"[aeiou]", word))
+    print(len(re.findall(r"[aeiou]", word)))
+
+
 if __name__ == '__main__':
     # nltk.download()
     # test_concordance(text2, "monstrous")
@@ -94,4 +121,5 @@ if __name__ == '__main__':
     # test_frequency_distribution()
     # test_collocations()
     # test_ebooks()
-    test_html()
+    # test_html()
+    test_re()
