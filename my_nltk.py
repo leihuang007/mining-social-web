@@ -1,6 +1,7 @@
 import nltk
 from nltk.book import text1, FreqDist
 from urllib import request
+from bs4 import BeautifulSoup
 
 
 def __my_separator(function_name: str, name: str):
@@ -14,6 +15,7 @@ def __lexical_diversity(my_text: nltk.text.Text):
 
 
 def test_concordance(my_text: nltk.text.Text, keyword: str):
+    """显示词语索引"""
     __my_separator("test_concordance", my_text.name)
     print(my_text.concordance(keyword))
 
@@ -24,7 +26,7 @@ def test_similar(my_texts: list, keyword: str):
         print(text.similar(keyword))
 
 
-def test_common_contexts(my_text: nltk.text.Text, keyword_list: list):
+def test_common_contexts(my_text: nltk.text.Text, keyword_list):
     __my_separator("test_common_contexts", my_text.name)
     print(my_text.common_contexts(keyword_list))
 
@@ -55,6 +57,7 @@ def test_frequency_distribution():
 
 
 def test_collocations():
+    """显示词组"""
     print(text1.collocations())
 
 
@@ -62,12 +65,21 @@ def test_ebooks():
     with request.urlopen('http://www.gutenberg.org/files/2554/2554-0.txt') as response:
         raw = response.read().decode('utf8')
         # print(raw)
-    end = raw.rfind("End of Project "
-                    "Gutenberg’s Crime and Punishment")
     tokens = nltk.word_tokenize(raw[raw.find('PART I'):raw.rfind("End of Project Gutenberg’s Crime and Punishment")])
     my_text = nltk.Text(tokens)
     print(my_text)
     print(my_text.collocations())
+
+
+def test_html():
+    url = "http://news.bbc.co.uk/2/hi/health/2284783.stm"
+    with request.urlopen(url) as response:
+        raw = response.read().decode('utf8')
+    bs_raw = BeautifulSoup(raw, 'html.parser').get_text()
+    tokens = nltk.word_tokenize(bs_raw)
+    text = nltk.Text(tokens)
+
+    print(text.concordance("gene"))
 
 
 if __name__ == '__main__':
@@ -81,4 +93,5 @@ if __name__ == '__main__':
     # print(__lexical_diversity(text3))
     # test_frequency_distribution()
     # test_collocations()
-    test_ebooks()
+    # test_ebooks()
+    test_html()
