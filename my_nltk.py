@@ -1,5 +1,6 @@
 import nltk
-from nltk.book import *
+from nltk.book import text1, FreqDist
+from urllib import request
 
 
 def __my_separator(function_name: str, name: str):
@@ -48,13 +49,25 @@ def test_frequency_distribution():
     # 查找超过15个字母的单词
     print([w for w in set(text1) if len(w) > 15])
 
-    fdist5 = FreqDist(text5)
-    print(sorted([w for w in set(text5) if len(w) > 7 and fdist5[w] > 7]))
+    fdist5 = FreqDist(text1)
+    print(sorted([w for w in set(text1) if len(w) > 7 and fdist5[w] > 7]))
     fdist5.tabulate()
 
 
 def test_collocations():
-    print(text4.collocations())
+    print(text1.collocations())
+
+
+def test_ebooks():
+    with request.urlopen('http://www.gutenberg.org/files/2554/2554-0.txt') as response:
+        raw = response.read().decode('utf8')
+        # print(raw)
+    end = raw.rfind("End of Project "
+                    "Gutenberg’s Crime and Punishment")
+    tokens = nltk.word_tokenize(raw[raw.find('PART I'):raw.rfind("End of Project Gutenberg’s Crime and Punishment")])
+    my_text = nltk.Text(tokens)
+    print(my_text)
+    print(my_text.collocations())
 
 
 if __name__ == '__main__':
@@ -66,5 +79,6 @@ if __name__ == '__main__':
     # test_dispersion_plot(text4, ["citizens", "democracy", "freedom", "duties", "America"])
     # test_generate(text1)
     # print(__lexical_diversity(text3))
-    test_frequency_distribution()
-    test_collocations()
+    # test_frequency_distribution()
+    # test_collocations()
+    test_ebooks()
