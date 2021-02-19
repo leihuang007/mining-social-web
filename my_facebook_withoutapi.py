@@ -7,6 +7,7 @@ import json
 from requests.cookies import RequestsCookieJar
 import os
 import time
+import random
 
 
 class DateEncoder(json.JSONEncoder):
@@ -24,6 +25,8 @@ def scrap_without_cookie():
                   'COVID19Resources',
                   373920943948661, 1288475234841795, 256933822441031, 1047666978949055, 'solidaritycandle',
                   'VancouverIslandEmergencyPreparedness', ]
+    # 由于Facebook对爬虫的限制，爬一会之后就会失去链接，因此每次爬取时都把group_list进行shuffle，雨露均沾。
+    random.shuffle(group_list)
     my_scraper = facebook_scraper._scraper
     my_scraper.user_agent = (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_0) "
@@ -43,7 +46,8 @@ def scrap_without_cookie():
         for group_id in group_list:
             print(f'Processing Group[{group_id}]')
             for index, post in enumerate(facebook_scraper.get_posts(group=group_id, pages=500)):
-                with open(os.path.join('COVID-19-FACEBOOK', f'{post["post_id"]}.json'), 'w') as file_handler:
+                with open(os.path.join("..", "COVID-DATASET", 'COVID-19-FACEBOOK', f'{post["post_id"]}.json'),
+                          'w') as file_handler:
                     print(f"\tSaving file{index} with post_id={post['post_id']}")
                     file_handler.write(json.dumps(post, indent=1, cls=DateEncoder))
             print(f'Done Group[{group_id}]')
