@@ -86,7 +86,7 @@ def search_twitter(q: str = "COVID-19", count: int = 1000, times: int = 1, is_lo
     if not is_local:
         my_twitter_api = generate_twitter_api()
 
-        search_results = my_twitter_api.search.tweets(q=q, count=count, lang="en")
+        search_results = my_twitter_api.search.tweets(q=q, count=count, lang="en", tweet_mode="extended")
         print(f"{search_results.rate_limit_remaining=}")
         statuses = search_results['statuses']
 
@@ -217,7 +217,15 @@ def draw_word_frequency_plot():
 
 if __name__ == '__main__':
     # find_most_retweeted()
-    statuses = search_twitter(count=1000, times=449, is_local=False)
-    save_statuses_to_file(statuses, dir_name='COVID-19')
+    q_list = ["#covid19vaccine", "#COVID-19", "#QuarantineLife", "#StayAtHome", "#SocialDistancing",
+              "#CoronavirusPandemic"]
+    for q in q_list:
+        try:
+            statuses = search_twitter(q=q, count=100, times=4, is_local=False)
+        except Exception as e:
+            print(e)
+        finally:
+            save_statuses_to_file(statuses, dir_name="/Users/leihuang/Work/pycharm-workspace"
+                                                     "/COVID-DATASET/COVID-19-20210219-3")
     # find_retweets()
     # draw_word_frequency_plot()
